@@ -142,20 +142,40 @@ class MainApp(tk.Tk):
 
         # 左侧目录树。
         left_frame: ttk.Frame = ttk.Frame(splitter)
+        left_container: ttk.Frame = ttk.Frame(left_frame)
+        left_container.pack(fill=tk.BOTH, expand=True)
+        left_container.rowconfigure(0, weight=1)
+        left_container.columnconfigure(0, weight=1)
+
         self.dir_tree = ttk.Treeview(
-            left_frame,
+            left_container,
             columns=("fullpath",),
             show="tree",
             selectmode="browse",
         )
-        dir_scrollbar: ttk.Scrollbar = ttk.Scrollbar(
-            left_frame,
+        dir_scrollbar_y: tk.Scrollbar = tk.Scrollbar(
+            left_container,
             orient=tk.VERTICAL,
             command=self.dir_tree.yview,
+            width=18,
+            relief=tk.SUNKEN,
+            borderwidth=1,
         )
-        self.dir_tree.configure(yscrollcommand=dir_scrollbar.set)
-        self.dir_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        dir_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        dir_scrollbar_x: tk.Scrollbar = tk.Scrollbar(
+            left_container,
+            orient=tk.HORIZONTAL,
+            command=self.dir_tree.xview,
+            width=18,
+            relief=tk.SUNKEN,
+            borderwidth=1,
+        )
+        self.dir_tree.configure(
+            yscrollcommand=dir_scrollbar_y.set,
+            xscrollcommand=dir_scrollbar_x.set,
+        )
+        self.dir_tree.grid(row=0, column=0, sticky="nsew")
+        dir_scrollbar_y.grid(row=0, column=1, sticky="ns")
+        dir_scrollbar_x.grid(row=1, column=0, sticky="ew")
         self.dir_tree.bind("<<TreeviewOpen>>", self._on_tree_expand)
         self.dir_tree.bind("<<TreeviewSelect>>", self._on_tree_select)
         splitter.add(left_frame, weight=1)
@@ -189,8 +209,13 @@ class MainApp(tk.Tk):
             relief="solid",
         )
 
+        table_container: ttk.Frame = ttk.Frame(right_frame)
+        table_container.pack(fill=tk.BOTH, expand=True)
+        table_container.rowconfigure(0, weight=1)
+        table_container.columnconfigure(0, weight=1)
+
         self.table = ttk.Treeview(
-            right_frame,
+            table_container,
             columns=("name", "remark", "path"),
             show="headings",
             selectmode="extended",
@@ -215,14 +240,29 @@ class MainApp(tk.Tk):
         self.table.column("remark", width=300, anchor=tk.W, stretch=True)
         self.table.column("path", width=400, anchor=tk.W, stretch=True)
 
-        table_scrollbar: ttk.Scrollbar = ttk.Scrollbar(
-            right_frame,
+        table_scrollbar_y: tk.Scrollbar = tk.Scrollbar(
+            table_container,
             orient=tk.VERTICAL,
             command=self.table.yview,
+            width=18,
+            relief=tk.SUNKEN,
+            borderwidth=1,
         )
-        self.table.configure(yscrollcommand=table_scrollbar.set)
-        self.table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        table_scrollbar_x: tk.Scrollbar = tk.Scrollbar(
+            table_container,
+            orient=tk.HORIZONTAL,
+            command=self.table.xview,
+            width=18,
+            relief=tk.SUNKEN,
+            borderwidth=1,
+        )
+        self.table.configure(
+            yscrollcommand=table_scrollbar_y.set,
+            xscrollcommand=table_scrollbar_x.set,
+        )
+        self.table.grid(row=0, column=0, sticky="nsew")
+        table_scrollbar_y.grid(row=0, column=1, sticky="ns")
+        table_scrollbar_x.grid(row=1, column=0, sticky="ew")
         self.table.bind("<Double-1>", self._on_table_double_click)
         self.table.bind("<Control-a>", self._select_all_rows)
         self.table.bind("<Control-A>", self._select_all_rows)
@@ -397,6 +437,9 @@ class MainApp(tk.Tk):
                 tk.END,
                 values=(row.name, row.current_remark, str(row.path)),
             )
+        self.path_label.config(
+            text=f"{LABEL_CURRENT_PATH_PREFIX}{path} | 子目录：{len(subfolders)}"
+        )
 
     def _on_drive_changed(self, event: tk.Event) -> None:
         """

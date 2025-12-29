@@ -34,12 +34,34 @@ def mapping_dialog(
 
     ttk.Label(dialog, text=hint).pack(anchor=tk.W, padx=10, pady=6)
 
+    text_frame: ttk.Frame = ttk.Frame(dialog)
+    text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
     text_widget: tk.Text = tk.Text(
-        dialog,
+        text_frame,
         width=100,
         height=max(10, len(mappings)),
+        wrap=tk.NONE,
     )
-    text_widget.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+    y_scroll: tk.Scrollbar = tk.Scrollbar(
+        text_frame,
+        orient=tk.VERTICAL,
+        command=text_widget.yview,
+        width=18,
+        relief=tk.SUNKEN,
+        borderwidth=1,
+    )
+    x_scroll: tk.Scrollbar = tk.Scrollbar(
+        text_frame,
+        orient=tk.HORIZONTAL,
+        command=text_widget.xview,
+        width=18,
+        relief=tk.SUNKEN,
+        borderwidth=1,
+    )
+    text_widget.configure(yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set)
+    text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    y_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+    x_scroll.pack(side=tk.BOTTOM, fill=tk.X)
     text_lines: List[str] = [
         f"{name}->{remark}" for name, remark, _ in mappings
     ]
